@@ -94,6 +94,28 @@ pipeline {
                 sh 'docker image prune -f || true'
             }
         }
+
+        stage('Push to Docker Hub') {
+            steps {
+                // Never let a registry problem block the EC2 deployment or the email.
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub',
+                                                      usernameVariable: 'DH_USER',
+                                                      passwordVariable: 'DH_TOKEN')]) {
+                        sh '''
+                            echo "$DH_TOKEN" | docker login -u "$DH_USER" --password-stdin
+                            REPO="$DH_USER/midterm-fa23-bct-031"
+                            docker tag ${APP_IMAGE}:${BUILD_NUMBER} $REPO:${BUILD_NUMBER}
+                            docker tag ${APP_IMAGE}:${BUILD_NUMBER} $REPO:latest
+                            docker push $REPO:${BUILD_NUMBER}
+                            docker push $REPO:latest
+                            docker logout
+                            echo "Pushed $REPO:latest"
+                        '''
+                    }
+                }
+            }
+        }
     }
 
     post {
