@@ -1,0 +1,10 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+Jenkinsfile
+ec2-setup.sh
+REPORT.md
+report/
