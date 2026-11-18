@@ -101,6 +101,7 @@ pipeline {
             script {
                 def metrics = fileExists('artifacts/metrics.json') ? readFile('artifacts/metrics.json') : 'metrics not produced'
                 def status = currentBuild.currentResult
+                try {
                 mail(
                     to: env.NOTIFY_EMAIL,
                     from: env.SENDER_EMAIL,
@@ -115,6 +116,10 @@ Model metrics:
 ${metrics}
 """
                 )
+                echo "Notification email sent to ${env.NOTIFY_EMAIL}"
+                } catch (err) {
+                    echo "WARNING: email could not be sent: ${err}"
+                }
             }
         }
     }
